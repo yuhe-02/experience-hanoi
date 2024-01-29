@@ -3,6 +3,7 @@ from tkinter import font
 import pandas as pd
 import time
 from .ex import Hanoilog
+import sys
 
 class EnemyMonit:
     def __init__(self,N,difficulty):
@@ -50,6 +51,10 @@ class EnemyMonit:
         canv.pack()
         return canv
     
+    def close_window(self):
+        self.root.destroy()
+        
+        
     def steps(self):
         return len(self.disks)
     
@@ -116,6 +121,7 @@ class EnemyMonit:
         self.root.after(1, self.execute_steps())
         return time.time()
         self.root.mainloop()
+        
 
     def execute_steps(self):
         for i in range(len(self.disks)):

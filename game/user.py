@@ -3,6 +3,7 @@ from tkinter import font
 import time
 from .enemy import EnemyMonit
 import sys
+import PySimpleGUI as sg
 
 class UserMonit:
     def __init__(self,N,difficulty):
@@ -25,6 +26,7 @@ class UserMonit:
         self.steps = self.e.steps()
         self.start = 0
         self.cpu_end = 0
+        self.label = None
     
     def set_counter(self):
         font1 = font.Font(family='Helvetica', size=20, weight='bold')
@@ -131,25 +133,58 @@ class UserMonit:
     
     def clr_button_click(self):
         usr_end = time.time()
-        print(f"クリア！！あなたの試行回数:{self.count}回, CPUの試行回数:{self.steps}回")
         
+        message1 = f"クリア！！あなたの試行回数:{self.count}回, CPUの試行回数:{self.steps}回"
         if self.cpu_end == 0:
-            print(f"あなたの勝ち！試行時間:{usr_end-self.start}")
+            message2 = f"あなたの勝ち！試行時間:{round(usr_end-self.start,1)}"
         else:
-            print(f"あなたの試行時間:{usr_end-self.start}, CPUの試行時間:{self.cpu_end-self.start}")
-        sys.exit()
+            message2 = f"あなたの試行時間:{round(usr_end-self.start,1)}, CPUの試行時間:{round(self.cpu_end-self.start,1)}"
+        self.result_monit(message1,message2)
+        
+        self.e.close_window()
         self.root.destroy()
+        sys.exit()
         
 
     def str_button_click(self):
         self.button2.config(state=tk.DISABLED)
-        time.sleep(5)
-        self.start = time.time()
-        self.cpu_end = self.e.main()
+        self.start_battle()
+        return
+    
+    def start_battle(self):
+        START_COUNT = 5
+        font1 = font.Font(family='Helvetica', size=30, weight='bold')
+        self.label = tk.Label(self.canv, text=f"{START_COUNT}",font=font1)
+        self.label.place(x=100, y=50)    
+        self.countdown(START_COUNT)
+        self.flg = True
+
+    def countdown(self, counter):
+        if counter > 0:
+            self.label.config(text=f'{counter}')
+            k = self.root.after(1000, self.countdown, counter-1)  # 1秒後にcountdown()を再帰的に呼び出す
+            return 
+        else:
+            # self.label.config(text='START!!!')
+            self.label.destroy()
+            self.start = time.time()
+            self.cpu_end = self.e.main()
+            return True
+        
+    def result_monit(self,message1,message2):
+        layout = [[sg.Text(f"{message1}\n{message2}")], [sg.Button("OK")]]
+
+        window = sg.Window("結果画面", layout)
+
+        while True:
+            event, values = window.read()
+            if event == sg.WIN_CLOSED or event == "OK":
+                break
+
+        window.close()
     
     def main(self):
         self.canv.bind('<Button-1>', self.mousePressed)          # ボタンが押されたときのコールバック設定
         self.canv.bind('<B1-Motion>', self.mouseDragged)         # ドラッギング中のコールバック設定
         self.canv.bind('<ButtonRelease-1>', self.mouseReleased)
         self.root.mainloop()
-    
